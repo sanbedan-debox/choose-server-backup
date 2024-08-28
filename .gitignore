@@ -1,0 +1,9 @@
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+/dist
+.env
+/deploys
+deploy*.zip
+/src/modules/csv/services/temp
