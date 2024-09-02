@@ -35,10 +35,30 @@ export class SubCategoryService {
       // Check input values
       const { error } = joiSchema.validate({
         name: input.name,
-        desc: input.desc,
       });
       if (error) {
         throw new ErrorWithProps(error.message.toString());
+      }
+
+      if (input.name.length > 60) {
+        throw new ErrorWithProps(
+          "Sub-Category name cannot be more than 60 characters, please try again!"
+        );
+      }
+
+      if (input.desc !== null) {
+        const { error } = joiSchema.validate({
+          desc: input.desc,
+        });
+        if (error) {
+          throw new ErrorWithProps(error.message.toString());
+        }
+
+        if (input.desc.length < 20 || input.desc.length > 160) {
+          throw new ErrorWithProps(
+            "Description must be more than 20 characters but less than 160 characters, please try again!"
+          );
+        }
       }
 
       // Check sub category with same name exist or not

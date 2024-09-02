@@ -33,7 +33,7 @@ export class ItemSubCategoryInput {
   @Field(() => String, { nullable: false })
   name: string;
 
-  @Field(() => String, { nullable: false })
+  @Field(() => String, { nullable: true })
   desc: string;
 }
 
@@ -42,7 +42,7 @@ export class AddItemInput {
   @Field(() => String, { nullable: false })
   name: string;
 
-  @Field(() => String, { nullable: true })
+  @Field(() => String, { nullable: false })
   desc: string;
 
   @Field(() => String, { nullable: true })

@@ -2,6 +2,7 @@ import { mongoose } from "@typegoose/typegoose";
 import { ErrorWithProps } from "mercurius";
 import { UpdateQuery } from "mongoose";
 import { StatusEnum } from "../../../types/common.enum";
+import { TaxRateInfo } from "../../../types/common.object";
 import Context from "../../../types/context.type";
 import { userHasPermission } from "../../../utils/helper";
 import {
@@ -75,14 +76,23 @@ class MenuService {
         throw new ErrorWithProps("Invalid menu type given, please try again");
       }
 
-      const tx = await TaxRateModel.findOne({
-        _id: taxRateId.toString(),
-      })
-        .select("_id name salesTax")
-        .lean();
+      let tx: TaxRateInfo | null = null;
+      if (taxRateId !== null) {
+        const taxRate = await TaxRateModel.findOne({
+          _id: taxRateId.toString(),
+        })
+          .select("_id name salesTax")
+          .lean();
 
-      if (!tx) {
-        throw new ErrorWithProps("Invalid tax rate given, please try again");
+        if (!taxRate) {
+          throw new ErrorWithProps("Invalid tax rate given, please try again");
+        }
+
+        tx = {
+          _id: taxRate._id,
+          name: taxRate.name,
+          salesTax: taxRate.salesTax,
+        };
       }
 
       const availabilityCheck = availabilityValidation(availability);

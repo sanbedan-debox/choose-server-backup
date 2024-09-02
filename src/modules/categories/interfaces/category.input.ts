@@ -10,7 +10,7 @@ export class AddCategoryInput {
   @Field(() => String, { nullable: false })
   name: string;
 
-  @Field(() => String, { nullable: false })
+  @Field(() => String, { nullable: true })
   desc: string;
 
   @Field(() => StatusEnum, { nullable: false })

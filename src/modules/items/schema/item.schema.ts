@@ -97,8 +97,8 @@ export class Item {
   @prop({ required: true })
   name: string;
 
-  @Field(() => String, { nullable: false })
-  @prop({ required: true })
+  @Field(() => String, { nullable: true, defaultValue: null })
+  @prop({ required: false, default: null })
   desc: string;
 
   @Field(() => User, { nullable: false })
@@ -122,7 +122,7 @@ export class Item {
   modifierGroup: ModifierGroupInfo[];
 
   @Field(() => String, { nullable: true })
-  @prop({ required: false })
+  @prop({ required: false, default: null })
   image: string;
 
   @Field(() => Number, { nullable: false })

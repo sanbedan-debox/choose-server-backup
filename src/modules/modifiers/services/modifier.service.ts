@@ -46,7 +46,7 @@ export class ModifierService {
       const { desc, name, isItem, preSelect, price } = input;
 
       // Check input values
-      const { error } = joiSchema.validate({ name, desc });
+      const { error } = joiSchema.validate({ name });
 
       if (error) {
         throw new ErrorWithProps(error.message);
@@ -64,10 +64,18 @@ export class ModifierService {
         );
       }
 
-      if (desc.length < 20 || desc.length > 160) {
-        throw new ErrorWithProps(
-          "Description must be more than 20 characters but less than 160 characters, please try again!"
-        );
+      if (desc !== null) {
+        const { error } = joiSchema.validate({ desc });
+
+        if (error) {
+          throw new ErrorWithProps(error.message);
+        }
+
+        if (desc.length < 20 || desc.length > 160) {
+          throw new ErrorWithProps(
+            "Description must be more than 20 characters but less than 160 characters, please try again!"
+          );
+        }
       }
 
       // Check if any modifier with same name is already added for given restaurant
@@ -467,7 +475,7 @@ export class ModifierService {
       } = input;
 
       // Check input values
-      const { error } = joiSchema.validate({ name, desc });
+      const { error } = joiSchema.validate({ name });
 
       const priceTypeValidation = enumValidation(PriceTypeEnum, pricingType);
 
@@ -493,10 +501,17 @@ export class ModifierService {
         );
       }
 
-      if (desc.length < 20 || desc.length > 160) {
-        throw new ErrorWithProps(
-          "Description must be more than 20 characters but less than 160 characters, please try again!"
-        );
+      if (desc !== null) {
+        const { error } = joiSchema.validate({ name });
+        if (error) {
+          throw new ErrorWithProps(error.message);
+        }
+
+        if (desc.length < 20 || desc.length > 160) {
+          throw new ErrorWithProps(
+            "Description must be more than 20 characters but less than 160 characters, please try again!"
+          );
+        }
       }
 
       // If not optional then min selection must be more than 0

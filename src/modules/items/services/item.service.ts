@@ -61,7 +61,7 @@ export class ItemService {
       } = input;
 
       // Check input values
-      const { error } = joiSchema.validate({ name, desc });
+      const { error } = joiSchema.validate({ name });
 
       if (error) {
         throw new ErrorWithProps(error.message);
@@ -79,10 +79,18 @@ export class ItemService {
         );
       }
 
-      if (desc.length < 20 || desc.length > 160) {
-        throw new ErrorWithProps(
-          "Description must be more than 20 characters but less than 160 characters, please try again!"
-        );
+      if (desc !== null) {
+        const { error } = joiSchema.validate({ desc });
+
+        if (error) {
+          throw new ErrorWithProps(error.message);
+        }
+
+        if (desc.length < 20 || desc.length > 160) {
+          throw new ErrorWithProps(
+            "Description must be more than 20 characters but less than 160 characters, please try again!"
+          );
+        }
       }
 
       if (image && !validateWebSiteURL(image)) {

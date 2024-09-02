@@ -6,7 +6,7 @@ export class AddModifierInput {
   @Field(() => String, { nullable: false })
   name: string;
 
-  @Field(() => String, { nullable: false })
+  @Field(() => String, { nullable: true })
   desc: string;
 
   @Field(() => Number, { nullable: false })
@@ -63,7 +63,7 @@ export class AddModifierGroupInput {
   @Field(() => String, { nullable: false })
   name: string;
 
-  @Field(() => String, { nullable: false })
+  @Field(() => String, { nullable: true })
   desc: string;
 
   @Field(() => Boolean)

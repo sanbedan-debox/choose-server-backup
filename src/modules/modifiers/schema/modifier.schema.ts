@@ -26,8 +26,8 @@ export class ModifierInfo {
   @prop({ required: true })
   name: string;
 
-  @Field(() => String, { nullable: false })
-  @prop({ required: true })
+  @Field(() => String, { nullable: true, defaultValue: null })
+  @prop({ required: false, default: null })
   desc: string;
 
   @Field(() => Number, { nullable: false })
@@ -65,8 +65,8 @@ export class Modifier {
   @prop({ required: true })
   name: string;
 
-  @Field(() => String, { nullable: false })
-  @prop({ required: true })
+  @Field(() => String, { nullable: true, defaultValue: null })
+  @prop({ required: false, default: null })
   desc: string;
 
   @Field(() => Number, { nullable: false })
@@ -113,19 +113,19 @@ export class ModifierGroup {
   item: Ref<Item>[];
 
   @Field(() => PriceTypeEnum)
-  @prop({ default: null })
+  @prop({ default: PriceTypeEnum.IndividualPrice })
   pricingType: PriceTypeEnum;
 
-  @Field(() => Number, { nullable: false })
-  @prop({ required: true })
+  @Field(() => Number, { nullable: true, defaultValue: null })
+  @prop({ required: false, default: null })
   price: number;
 
   @Field(() => String, { nullable: false })
   @prop({ required: true })
   name: string;
 
-  @Field(() => String, { nullable: false })
-  @prop({ required: true })
+  @Field(() => String, { nullable: true, defaultValue: null })
+  @prop({ required: false, default: null })
   desc: string;
 
   @Field(() => Boolean)

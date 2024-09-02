@@ -7,6 +7,7 @@ import {
 import { loadPermissions } from "../../../middlewares/loader";
 import Context from "../../../types/context.type";
 import { CloverConnectionInput } from "../interface/clover.input";
+import { CloverInventory, CloverRowItem } from "../interface/clover.type";
 import CloverService from "../service/clover.service";
 
 export class CloverResolver {
@@ -42,6 +43,20 @@ export class CloverResolver {
   }
 
   // Pull Data From Clover
+  @Query(() => CloverInventory)
+  @UseMiddleware([
+    isAuthenticated,
+    isUser,
+    hasRestaurantAccess,
+    loadPermissions,
+  ])
+  async fetchCloverInventory(
+    @Ctx() context: Context
+  ): Promise<CloverInventory> {
+    return await this.service.fetchCloverInventory(context);
+  }
+
+  // Is Clover Connected
   @Query(() => Boolean)
   @UseMiddleware([
     isAuthenticated,
@@ -49,5 +64,22 @@ export class CloverResolver {
     hasRestaurantAccess,
     loadPermissions,
   ])
-  async pullCloverData() {}
+  async isCloverConnected(@Ctx() context: Context): Promise<boolean> {
+    return await this.service.isCloverConnected(context);
+  }
+
+  // Save Clover Menu
+  @Mutation(() => Boolean)
+  @UseMiddleware([
+    isAuthenticated,
+    isUser,
+    hasRestaurantAccess,
+    loadPermissions,
+  ])
+  async saveCloverData(
+    @Arg("rowItems", () => [CloverRowItem]) rowItems: CloverRowItem[],
+    @Ctx() context: Context
+  ): Promise<boolean> {
+    return await this.service.saveCloverData(rowItems, context);
+  }
 }

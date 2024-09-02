@@ -21,25 +21,28 @@ export class CloverCredential {
   @prop({ ref: "Integration" })
   integration: Ref<Integration>;
 
+  @prop({ default: null })
+  repeatJobKey: string;
+
   @Field(() => String)
   @prop()
   merchantId: string;
 
-  @Field(() => String)
   @prop()
   accessToken: string;
 
-  @Field(() => Number)
   @prop()
   accessTokenExpiration: number;
 
-  @Field(() => String)
   @prop()
   refreshToken: string;
 
-  @Field(() => Number)
   @prop()
   refreshTokenExpiration: number;
+
+  @Field(() => Date)
+  @prop()
+  createdAt: Date;
 }
 
 export const CloverCredentialModel = getModelForClass(CloverCredential, {

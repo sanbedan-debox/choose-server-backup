@@ -53,7 +53,6 @@ export class CategoryService {
       // Check all input values
       const { error } = joiSchema.validate({
         name,
-        desc,
       });
       if (error) {
         throw new ErrorWithProps(error.message.toString());
@@ -65,10 +64,19 @@ export class CategoryService {
         );
       }
 
-      if (desc.length < 20 || desc.length > 160) {
-        throw new ErrorWithProps(
-          "Description must be more than 20 characters but less than 160 characters, please try again!"
-        );
+      if (desc !== null) {
+        const { error } = joiSchema.validate({
+          desc,
+        });
+        if (error) {
+          throw new ErrorWithProps(error.message.toString());
+        }
+
+        if (desc.length < 20 || desc.length > 160) {
+          throw new ErrorWithProps(
+            "Description must be more than 20 characters but less than 160 characters, please try again!"
+          );
+        }
       }
 
       const availabilityCheck = availabilityValidation(availability);

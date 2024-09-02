@@ -1,3 +1,4 @@
+import { mongoose } from "@typegoose/typegoose";
 import { StatusEnum } from "../../../types/common.enum";
 import { CategoryModel } from "../../categories/schema/category.schema";
 import { sendCsvUploadSummaryMail } from "../../emailers/service";
@@ -23,6 +24,9 @@ export const saveCsvDataWorker = async (
   user: string,
   restaurant: string
 ) => {
+  const dbSession = await mongoose.startSession();
+  dbSession.startTransaction();
+
   try {
     if (csvItems.length > 0) {
       const maxCsvRows = await ConfigsModel.findOne({
@@ -72,7 +76,7 @@ export const saveCsvDataWorker = async (
               const element = data[i];
               let item: {
                 category: string;
-                categoryDesc: string;
+                categoryDesc: string | null;
                 subCategory: string | null;
                 subCategoryDesc: string | null;
                 name: string;
@@ -306,17 +310,25 @@ export const saveCsvDataWorker = async (
 
                   if (!subCateCheck) {
                     // Add subCategory in db
-                    const subCate = await SubCategoryModel.create({
-                      name: item.subCategory,
-                      desc: item.subCategoryDesc,
-                      restaurantId: restaurant,
-                      user: user,
-                    });
-                    subCategoryMap.set(
-                      item.subCategory,
-                      subCate._id.toString()
+                    const subCate = await SubCategoryModel.create(
+                      [
+                        {
+                          name: item.subCategory,
+                          desc: item.subCategoryDesc,
+                          restaurantId: restaurant,
+                          user: user,
+                        },
+                      ],
+                      { session: dbSession }
                     );
-                    subCategoryAddedCount += 1;
+
+                    if (subCate.length > 0) {
+                      subCategoryMap.set(
+                        item.subCategory,
+                        subCate[0]._id.toString()
+                      );
+                      subCategoryAddedCount += 1;
+                    }
                   } else {
                     subCategoryMap.set(
                       item.subCategory,
@@ -361,7 +373,8 @@ export const saveCsvDataWorker = async (
                             }
                           : null,
                     },
-                  }
+                  },
+                  { session: dbSession }
                 )
                   .select("_id category")
                   .lean();
@@ -370,30 +383,39 @@ export const saveCsvDataWorker = async (
 
                 updateItemMap.set(item.name, updItem._id);
               } else {
-                const addItem = await ItemModel.create({
-                  name: item.name,
-                  desc: item.desc,
-                  price: item.price,
-                  status: item.status ? StatusEnum.active : StatusEnum.inactive,
-                  user: user,
-                  restaurantId: restaurant,
-                  availability: resto.availability,
-                  visibility: v,
-                  priceOptions: po,
-                  options: opts,
-                  orderLimit: item.orderLimit,
-                  subCategory:
-                    item.subCategory !== null &&
-                    subCategoryMap.get(item.subCategory) !== undefined
-                      ? {
-                          id: subCategoryMap.get(item.subCategory),
-                          name: item.subCategory,
-                          desc: item.desc,
-                        }
-                      : null,
-                });
+                const addItem = await ItemModel.create(
+                  [
+                    {
+                      name: item.name,
+                      desc: item.desc,
+                      price: item.price,
+                      status: item.status
+                        ? StatusEnum.active
+                        : StatusEnum.inactive,
+                      user: user,
+                      restaurantId: restaurant,
+                      availability: resto.availability,
+                      visibility: v,
+                      priceOptions: po,
+                      options: opts,
+                      orderLimit: item.orderLimit,
+                      subCategory:
+                        item.subCategory !== null &&
+                        subCategoryMap.get(item.subCategory) !== undefined
+                          ? {
+                              id: subCategoryMap.get(item.subCategory),
+                              name: item.subCategory,
+                              desc: item.desc,
+                            }
+                          : null,
+                    },
+                  ],
+                  { session: dbSession }
+                );
 
-                addItemMap.set(item.name, addItem._id);
+                if (addItem.length > 0) {
+                  addItemMap.set(item.name, addItem[0]._id);
+                }
               }
 
               // Check category in set
@@ -411,36 +433,44 @@ export const saveCsvDataWorker = async (
 
                 if (!cateCheck) {
                   // Add category in db
-                  const cate = await CategoryModel.create({
-                    name: item.category,
-                    desc: item.categoryDesc,
-                    user: user,
-                    restaurantId: restaurant,
-                    menu: [menu],
-                    availability: resto.availability,
-                    visibility: v,
-                  });
-
-                  await MenuModel.updateOne(
-                    {
-                      _id: menu,
-                      user: user,
-                      restaurantId: restaurant,
-                    },
-                    {
-                      $addToSet: {
-                        categories: {
-                          _id: cate._id,
-                          id: cate._id.toString(),
-                          name: cate.name,
-                          status: cate.status,
-                        },
+                  const cate = await CategoryModel.create(
+                    [
+                      {
+                        name: item.category,
+                        desc: item.categoryDesc,
+                        user: user,
+                        restaurantId: restaurant,
+                        menu: [menu],
+                        availability: resto.availability,
+                        visibility: v,
                       },
-                    }
+                    ],
+                    { session: dbSession }
                   );
 
-                  categoryMap.set(item.category, cate._id.toString());
-                  categoryAddedCount += 1;
+                  if (cate.length > 0) {
+                    await MenuModel.updateOne(
+                      {
+                        _id: menu,
+                        user: user,
+                        restaurantId: restaurant,
+                      },
+                      {
+                        $addToSet: {
+                          categories: {
+                            _id: cate[0]._id,
+                            id: cate[0]._id.toString(),
+                            name: cate[0].name,
+                            status: cate[0].status,
+                          },
+                        },
+                      },
+                      { session: dbSession }
+                    );
+
+                    categoryMap.set(item.category, cate[0]._id.toString());
+                    categoryAddedCount += 1;
+                  }
                 } else {
                   // check if cate is added in the menu
                   const checkCateInMenu = checkMenu.categories.find(
@@ -462,12 +492,14 @@ export const saveCsvDataWorker = async (
                             status: cateCheck.status,
                           },
                         },
-                      }
+                      },
+                      { session: dbSession }
                     );
 
                     await CategoryModel.updateOne(
                       { _id: cateCheck._id },
-                      { $addToSet: { menu: menu } }
+                      { $addToSet: { menu: menu } },
+                      { session: dbSession }
                     );
                   }
                   categoryMap.set(item.category, cateCheck._id.toString());
@@ -489,7 +521,8 @@ export const saveCsvDataWorker = async (
                     $set: {
                       category: cid,
                     },
-                  }
+                  },
+                  { session: dbSession }
                 )
                   .select("_id name price status image")
                   .lean();
@@ -506,7 +539,8 @@ export const saveCsvDataWorker = async (
                         _id: iId,
                       },
                     },
-                  }
+                  },
+                  { session: dbSession }
                 );
 
                 await CategoryModel.updateOne(
@@ -526,7 +560,8 @@ export const saveCsvDataWorker = async (
                         image: i.image,
                       },
                     },
-                  }
+                  },
+                  { session: dbSession }
                 );
               }
               // add item to cid
@@ -543,7 +578,7 @@ export const saveCsvDataWorker = async (
                       category: cid,
                     },
                   },
-                  { new: true }
+                  { new: true, session: dbSession }
                 )
                   .select("_id name price status image")
                   .lean();
@@ -565,7 +600,8 @@ export const saveCsvDataWorker = async (
                         image: i.image,
                       },
                     },
-                  }
+                  },
+                  { session: dbSession }
                 );
               }
             }
@@ -581,11 +617,16 @@ export const saveCsvDataWorker = async (
               categoryAddedCount,
               subCategoryAddedCount
             );
+
+            await dbSession.commitTransaction();
           }
         }
       }
     }
   } catch (error) {
+    await dbSession.abortTransaction();
     console.log("CSV Upload Error", error);
+  } finally {
+    await dbSession.endSession();
   }
 };

@@ -157,8 +157,12 @@ export class CSVService {
           // Check cell for any special character or empty value
           if (
             CsvHelpers.invalidStringCellValue(category.toString()) ||
+            ((categoryDesc?.toString() ?? "") !== "" &&
+              CsvHelpers.invalidStringCellValue(categoryDesc.toString())) ||
             ((subCategory?.toString() ?? "") !== "" &&
               CsvHelpers.invalidStringCellValue(subCategory.toString())) ||
+            ((subCategoryDesc?.toString() ?? "") !== "" &&
+              CsvHelpers.invalidStringCellValue(subCategoryDesc.toString())) ||
             CsvHelpers.invalidStringCellValue(itemName.toString()) ||
             CsvHelpers.invalidStringCellValue(itemDesc.toString())
           ) {
@@ -210,7 +214,8 @@ export class CSVService {
           // Check category name and category desc limit
           if (
             CsvHelpers.invalidItemNameLimit(category.toString()) ||
-            CsvHelpers.invalidItemDescLimit(categoryDesc.toString())
+            ((categoryDesc?.toString() ?? "") !== "" &&
+              CsvHelpers.invalidItemDescLimit(categoryDesc.toString()))
           ) {
             throw new ErrorWithProps(
               "Invalid limit for category name or category desc, please try again!"
@@ -220,7 +225,8 @@ export class CSVService {
           // Check sub category name and sub category desc limit
           if (
             CsvHelpers.invalidItemNameLimit(subCategory.toString()) ||
-            CsvHelpers.invalidItemDescLimit(subCategoryDesc.toString())
+            ((subCategoryDesc?.toString() ?? "") !== "" &&
+              CsvHelpers.invalidItemDescLimit(subCategoryDesc.toString()))
           ) {
             throw new ErrorWithProps(
               "Invalid limit for sub category name or sub category desc, please try again!"
@@ -232,10 +238,14 @@ export class CSVService {
             row.getCell(1).value.toString(),
             "string"
           );
-          const categoryDescSanitized = CsvHelpers.sanitizeCellValue(
-            row.getCell(2).value.toString(),
-            "string"
-          );
+          const categoryDescSanitized: string | null = row
+            .getCell(2)
+            .value?.toString()
+            ? (CsvHelpers.sanitizeCellValue(
+                row.getCell(2).value?.toString(),
+                "string"
+              ) as string)
+            : null;
           const subCategorySanitized: string | null = row
             .getCell(3)
             .value?.toString()
@@ -335,7 +345,7 @@ export class CSVService {
 
           finalData.push({
             category: categorySanitized as string,
-            categoryDesc: categoryDescSanitized as string,
+            categoryDesc: categoryDescSanitized,
             subCategory: subCategorySanitized,
             subCategoryDesc: subCategoryDescSanitized,
             itemName: itemNameSanitized as string,

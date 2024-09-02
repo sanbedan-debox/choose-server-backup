@@ -2,7 +2,7 @@ import { CsvQueueType } from "./csv.enum";
 
 export interface CsvRowItem {
   category: string;
-  categoryDesc: string;
+  categoryDesc: string | null;
   subCategory: string | null;
   subCategoryDesc: string | null;
   itemName: string;

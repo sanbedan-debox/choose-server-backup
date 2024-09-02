@@ -19,9 +19,9 @@ export class SubCategory {
   @prop({ required: true })
   name: String;
 
-  @Field(() => String, { nullable: false })
-  @prop({ required: true })
-  desc: String;
+  @Field(() => String, { nullable: true, defaultValue: null })
+  @prop({ required: false, default: null })
+  desc: string;
 
   @Field(() => User, { nullable: false })
   @prop({ ref: "User" })

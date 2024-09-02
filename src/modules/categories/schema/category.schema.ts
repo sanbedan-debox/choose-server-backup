@@ -52,8 +52,8 @@ export class Category {
   @prop({ required: true })
   name: string;
 
-  @Field(() => String, { nullable: false })
-  @prop({ required: true })
+  @Field(() => String, { nullable: true, defaultValue: null })
+  @prop({ required: false, default: null })
   desc: string;
 
   @Field(() => User, { nullable: false })
